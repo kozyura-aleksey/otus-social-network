@@ -1,4 +1,4 @@
-import { IsEnum, IsString } from 'class-validator';
+import { IsDate, IsEnum, IsString } from 'class-validator';
 
 export enum GenderEnum {
   'male' = 'male',
@@ -18,8 +18,8 @@ export class RegisterDto {
   @IsString()
   email: string;
 
-  @IsString()
-  birth_date: string;
+  @IsDate()
+  birth_date: Date;
 
   @IsEnum(GenderEnum)
   gender: GenderEnum;
