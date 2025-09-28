@@ -37,10 +37,10 @@ async function runMigrations() {
 
     if (rowCount === 0) {
       const sql = readFileSync(join(dir, file), 'utf8');
-      console.log(`⏳ Выполняю миграцию: ${file}`);
+      console.log(`Выполнение миграции: ${file}`);
       await client.query(sql);
       await client.query('INSERT INTO migrations (name) VALUES ($1)', [file]);
-      console.log(`Применена: ${file}`);
+      console.log(`Миграция применена: ${file}`);
     }
   }
 
