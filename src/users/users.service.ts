@@ -7,12 +7,12 @@ import {
 } from '@nestjs/common';
 import { Pool } from 'pg';
 import { JwtService } from '@nestjs/jwt';
-import { LoginDto, RegisterDto } from './dto/index.dto';
+import { LoginDto, RegisterDto, SearchQuery } from './dto/index.dto';
 import * as bcrypt from 'bcryptjs';
 import { UserResponse } from './dto/index.response';
 
 @Injectable()
-export class UsersService implements OnModuleInit {
+export class UsersService {
   constructor(
     @Inject('PG_POOL') private pool: Pool,
     private jwtService: JwtService,
@@ -27,25 +27,6 @@ export class UsersService implements OnModuleInit {
     } finally {
       client.release();
     }
-  }
-
-  private async createTableUser() {
-    await this.query(`CREATE TABLE IF NOT EXISTS users(
-    id SERIAL PRIMARY KEY,
-    first_name VARCHAR(50) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    birth_date DATE NOT NULL,
-    gender VARCHAR(10) CHECK (gender IN ('male', 'female')),
-    interests TEXT,
-    city VARCHAR(100),
-    email VARCHAR(100),
-    password VARCHAR(255) NOT NULL
-    );`);
-  }
-
-  async onModuleInit() {
-    await this.createTableUser();
-    console.log('Users table is ready');
   }
 
   private async generateToken(user): Promise<string> {
@@ -126,6 +107,21 @@ export class UsersService implements OnModuleInit {
         id: user.id,
         token: await this.generateToken(user),
       };
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException();
+    }
+  }
+
+  async search(query: SearchQuery): Promise<UserResponse[] | []> {
+    try {
+      const user = await this.query(
+        `SELECT id, first_name, last_name, birth_date, gender, city FROM users 
+        WHERE first_name LIKE $1 AND last_name LIKE $2
+        order by id asc`,
+        [`%${query.first_name}%`, `%${query.last_name}%`],
+      );
+      return user;
     } catch (e) {
       console.log(e);
       throw new BadRequestException();
