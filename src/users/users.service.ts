@@ -119,7 +119,7 @@ export class UsersService {
         `SELECT id, first_name, last_name, birth_date, gender, city FROM users 
         WHERE first_name LIKE $1 AND last_name LIKE $2
         order by id asc`,
-        [`%${query.first_name}%`, `%${query.last_name}%`],
+        [`${query.first_name}%`, `${query.last_name}%`],
       );
       return user;
     } catch (e) {
