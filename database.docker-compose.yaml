@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  db:
+  pgmaster:
     image: postgres:16-alpine
     ports:
       - "5432:5432"
@@ -10,7 +10,37 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: social_network_db
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - pgmaster_data:/var/lib/postgresql/data
+
+  pgslave:
+    image: postgres:16-alpine
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      REPLICATION_USER: replicator
+      REPLICATION_PASSWORD: pass
+      PRIMARY_HOST: pgmaster
+    depends_on:
+      - pgmaster
+    volumes:
+      - pgslave_data:/var/lib/postgresql/data
+
+  pgasyncslave:
+    image: postgres:16-alpine
+    ports:
+      - "25432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      REPLICATION_USER: replicator
+      REPLICATION_PASSWORD: pass
+      PRIMARY_HOST: pgmaster
+    depends_on:
+      - pgmaster
+    volumes:
+      - pgasyncslave_data:/var/lib/postgresql/data
 
 volumes:
-  db_data:
+  pgmaster_data:
+  pgslave_data:
+  pgasyncslave_data:
