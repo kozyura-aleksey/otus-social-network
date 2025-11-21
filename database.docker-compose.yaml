@@ -52,7 +52,7 @@ services:
     depends_on:
       - pgmaster
     volumes:
-      - pgslave_data:/var/lib/postgresql/data
+      - ../pgslave:/var/lib/postgresql/data
     networks:
       - pgnet
 
@@ -69,7 +69,7 @@ services:
     depends_on:
       - pgmaster
     volumes:
-      - pgasyncslave_data:/var/lib/postgresql/data
+      - ../pgasyncslave:/var/lib/postgresql/data
     networks:
       - pgnet
 
