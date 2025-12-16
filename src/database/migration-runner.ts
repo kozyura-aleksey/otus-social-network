@@ -7,7 +7,7 @@ async function runMigrations() {
   const configService = new ConfigService();
   const client = new Client({
     host: configService.get('POSTGRES_HOST') ?? 'localhost',
-    port: Number(configService.get('POSTGRES_PORT')) ?? 5432,
+    port: Number(configService.get('POSTGRES_MASTER_PORT')) ?? 5432,
     user: configService.get('POSTGRES_USER') ?? 'postgres',
     password: configService.get('POSTGRES_PASSWORD') ?? 'postgres',
     database: configService.get('POSTGRES_DB') ?? 'social_network_db',

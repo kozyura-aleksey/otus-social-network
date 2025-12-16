@@ -14,13 +14,18 @@ import { UserResponse } from './dto/index.response';
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject('PG_POOL') private pool: Pool,
+    @Inject('PG_POOL_MASTER') private poolMaster: Pool,
+    @Inject('PG_POOL_SLAVE') private poolSlave: Pool,
     private jwtService: JwtService,
   ) {}
 
   // универсальный метод для запросов
-  private async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
-    const client = await this.pool.connect();
+  private async query<T = any>(
+    pool: Pool,
+    sql: string,
+    params?: any[],
+  ): Promise<T[]> {
+    const client = await pool.connect();
     try {
       const { rows } = await client.query(sql, params);
       return rows;
@@ -37,6 +42,7 @@ export class UsersService {
   async getUserById(id: number): Promise<UserResponse> {
     try {
       const user = await this.query(
+        this.poolSlave,
         'SELECT first_name, last_name, birth_date, gender, interests, city FROM users WHERE id = $1',
         [id],
       );
@@ -52,9 +58,11 @@ export class UsersService {
 
   async getUserByEmail(email: string): Promise<UserResponse> {
     try {
-      const user = await this.query('SELECT * FROM users WHERE email = $1', [
-        email,
-      ]);
+      const user = await this.query(
+        this.poolSlave,
+        'SELECT * FROM users WHERE email = $1',
+        [email],
+      );
       if (!user) {
         throw new NotFoundException();
       }
@@ -87,6 +95,7 @@ export class UsersService {
       const hashPassword = await bcrypt.hash(dto.password, 5);
 
       await this.query(
+        this.poolMaster,
         `INSERT INTO users (first_name, last_name, birth_date, gender, interests, city, email, password) 
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
@@ -116,6 +125,7 @@ export class UsersService {
   async search(query: SearchQuery): Promise<UserResponse[] | []> {
     try {
       const user = await this.query(
+        this.poolSlave,
         `SELECT id, first_name, last_name, birth_date, gender, city FROM users 
         WHERE first_name LIKE $1 AND last_name LIKE $2
         order by id asc`,
