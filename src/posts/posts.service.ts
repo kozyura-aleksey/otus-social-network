@@ -1,6 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Pool } from 'pg';
+import { query } from 'src/utils/query';
 
 @Injectable()
 export class PostsService {
@@ -10,11 +11,60 @@ export class PostsService {
     private jwtService: JwtService,
   ) {}
 
-  async createPost() {}
+  async createPost(current_user_id: number, text: string) {
+    try {
+      await query(
+        this.poolMaster,
+        `INSERT INTO posts(text, user_id)
+              VALUES ($1, $2)`,
+        [text, current_user_id],
+      );
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException();
+    }
+  }
 
-  async updatePost() {}
+  async updatePost(current_user_id: number, text: string, post_id: number) {
+    try {
+      await query(
+        this.poolMaster,
+        `update posts
+        set text = $1 
+        where user_id = $2 and id = $3)`,
+        [current_user_id, text, post_id],
+      );
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException();
+    }
+  }
 
-  async deletePost() {}
+  async deletePost(current_user_id: number, post_id: number) {
+    try {
+      await query(
+        this.poolMaster,
+        `delete from posts
+              where user_id = $1 and id = $2)`,
+        [current_user_id, post_id],
+      );
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException();
+    }
+  }
 
-  async getPost() {}
+  async getPost(current_user_id: number, post_id: number) {
+    try {
+      await query(
+        this.poolMaster,
+        `SELECT from posts
+              where user_id = $1 and id = $2)`,
+        [current_user_id, post_id],
+      );
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException();
+    }
+  }
 }
