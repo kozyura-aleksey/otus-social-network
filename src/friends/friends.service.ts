@@ -39,7 +39,7 @@ export class FriendsService {
       await query(
         this.poolMaster,
         `DELETE FROM friends where 
-         current_user_id = $1 and  friend_id = $2)`,
+         current_user_id = $1 and  friend_id = $2`,
         [current_user_id, friend_id],
       );
       return 'Успешно создан пост';

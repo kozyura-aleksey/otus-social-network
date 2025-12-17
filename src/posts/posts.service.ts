@@ -31,7 +31,7 @@ export class PostsService {
         this.poolMaster,
         `update posts
         set text = $1 
-        where user_id = $2 and id = $3)`,
+        where user_id = $2 and id = $3`,
         [current_user_id, text, post_id],
       );
     } catch (e) {
@@ -45,7 +45,7 @@ export class PostsService {
       await query(
         this.poolMaster,
         `delete from posts
-              where user_id = $1 and id = $2)`,
+              where user_id = $1 and id = $2`,
         [current_user_id, post_id],
       );
     } catch (e) {
@@ -59,8 +59,27 @@ export class PostsService {
       await query(
         this.poolMaster,
         `SELECT from posts
-              where user_id = $1 and id = $2)`,
+              where user_id = $1 and id = $2`,
         [current_user_id, post_id],
+      );
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException();
+    }
+  }
+
+  async feed(current_user_id: number, offset: number, limit: number) {
+    try {
+      await query(
+        this.poolMaster,
+        `SELECT p.*
+          FROM posts p
+          JOIN friends f
+          ON p.user_id = f.friend_id
+        WHERE f.user_id = $1
+        ORDER BY p.id DESC
+        LIMIT $2 OFFSET $3`,
+        [current_user_id, limit, offset],
       );
     } catch (e) {
       console.log(e);

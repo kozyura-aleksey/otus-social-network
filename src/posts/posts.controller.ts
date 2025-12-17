@@ -16,6 +16,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/create.post';
 import { UpdatePostDto } from './dto/update.post.dto';
 import { identity } from 'rxjs';
+import { FeedDto } from './dto/feed.dto';
 
 @Controller('post')
 @UseGuards(JwtAuthGuard)
@@ -40,7 +41,7 @@ export class PostsController {
     return await this.postService.deletePost(user.id, id);
   }
 
-  @Get(':id')
+  @Get('get/:id')
   async get(
     @CurrentUser() user: UserResponse,
     @Param('id', ParseIntPipe) id: number,
@@ -49,5 +50,7 @@ export class PostsController {
   }
 
   @Get('feed')
-  async feed(@CurrentUser() user: UserResponse) {}
+  async feed(@CurrentUser() user: UserResponse, @Body() dto: FeedDto) {
+    return await this.postService.feed(user.id, dto.limit, dto.offset);
+  }
 }
