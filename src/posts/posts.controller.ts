@@ -50,6 +50,6 @@ export class PostsController {
 
   @Get('feed')
   async feed(@CurrentUser() user: UserResponse, @Body() dto: FeedDto) {
-    return await this.postService.feed(user.id, dto.limit, dto.offset);
+    return await this.postService.feed(user.id, dto);
   }
 }

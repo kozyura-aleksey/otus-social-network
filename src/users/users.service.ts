@@ -27,7 +27,7 @@ export class UsersService {
   async getUserById(id: number): Promise<UserResponse> {
     try {
       const user = await query(
-        this.poolSlave,
+        this.poolMaster,
         'SELECT first_name, last_name, birth_date, gender, interests, city FROM users WHERE id = $1',
         [id],
       );
@@ -44,7 +44,7 @@ export class UsersService {
   async getUserByEmail(email: string): Promise<UserResponse> {
     try {
       const user = await query(
-        this.poolSlave,
+        this.poolMaster,
         'SELECT * FROM users WHERE email = $1',
         [email],
       );
@@ -110,7 +110,7 @@ export class UsersService {
   async search(queryIn: SearchQuery): Promise<UserResponse[] | []> {
     try {
       const user = await query(
-        this.poolSlave,
+        this.poolMaster,
         `SELECT id, first_name, last_name, birth_date, gender, city FROM users 
         WHERE first_name LIKE $1 AND last_name LIKE $2
         order by id asc`,
