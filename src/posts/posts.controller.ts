@@ -15,7 +15,6 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/create.post';
 import { UpdatePostDto } from './dto/update.post.dto';
-import { identity } from 'rxjs';
 import { FeedDto } from './dto/feed.dto';
 
 @Controller('post')

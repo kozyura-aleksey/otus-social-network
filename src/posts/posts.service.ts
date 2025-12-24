@@ -1,6 +1,8 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import Redis from 'ioredis';
 import { Pool } from 'pg';
+import { REDIS_CLIENT } from 'src/redis/redis.provider';
 import { query } from 'src/utils/query';
 
 @Injectable()
@@ -9,6 +11,8 @@ export class PostsService {
     @Inject('PG_POOL_MASTER') private poolMaster: Pool,
     @Inject('PG_POOL_SLAVE') private poolSlave: Pool,
     private jwtService: JwtService,
+    @Inject(REDIS_CLIENT)
+    private readonly redis: Redis,
   ) {}
 
   async createPost(current_user_id: number, text: string) {
