@@ -24,6 +24,17 @@ export class PostsService {
               VALUES ($1, $2)`,
         [text, current_user_id],
       );
+      const friends = await query(
+        this.poolMaster,
+        `SELECT user_id
+         FROM friends
+         WHERE friend_id = $1`,
+        [current_user_id],
+      );
+
+      for (const f of friends) {
+        await this.redis.del(`feed:user:${f.user_id}`);
+      }
     } catch (e) {
       console.log(e);
       throw new BadRequestException();
