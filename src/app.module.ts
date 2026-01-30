@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { FriendsModule } from './friends/friends.module';
 import { PostsModule } from './posts/posts.module';
 import { RedisModule } from './redis/redis.module';
+import { DialogsModule } from './dialog/dialogs.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RedisModule } from './redis/redis.module';
     AuthModule,
     FriendsModule,
     PostsModule,
+    DialogsModule,
   ],
   controllers: [],
   providers: [],
