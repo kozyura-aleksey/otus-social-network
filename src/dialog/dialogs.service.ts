@@ -15,9 +15,9 @@ export class DialogsService {
     try {
       await query(
         this.poolMaster,
-        `INSERT INTO friends(user_id, friend_id)
-              VALUES ($1, $2)`,
-        [current_user_id, friend_id],
+        `INSERT INTO dialogs(user_id, friend_id, message)
+              VALUES ($1, $2, $3)`,
+        [current_user_id, friend_id, text],
       );
     } catch (e) {
       console.log(e);
@@ -29,8 +29,8 @@ export class DialogsService {
     try {
       await query(
         this.poolMaster,
-        `INSERT INTO friends(user_id, friend_id)
-              VALUES ($1, $2)`,
+        `SELECT from dialogs 
+          where user_id = $1 and friend_id = $2`,
         [current_user_id, friend_id],
       );
     } catch (e) {
