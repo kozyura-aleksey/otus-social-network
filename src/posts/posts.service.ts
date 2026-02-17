@@ -72,12 +72,13 @@ export class PostsService {
 
   async getPost(current_user_id: number, post_id: number) {
     try {
-      await query(
+      const post = await query(
         this.poolMaster,
-        `SELECT from posts
+        `SELECT * from posts
               where user_id = $1 and id = $2`,
         [current_user_id, post_id],
       );
+      return post[0];
     } catch (e) {
       console.log(e);
       throw new BadRequestException();

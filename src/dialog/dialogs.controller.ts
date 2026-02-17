@@ -24,7 +24,7 @@ export class DialogsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: SendMessageDto,
   ) {
-    await this.dialogsService.sendMessage(user.id, dto.text, id);
+    return await this.dialogsService.sendMessage(user.id, dto.text, id);
   }
 
   @Get(':id/list')
@@ -32,6 +32,6 @@ export class DialogsController {
     @CurrentUser() user: UserResponse,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    await this.dialogsService.getDialog(user.id, id);
+    return await this.dialogsService.getDialog(user.id, id);
   }
 }
