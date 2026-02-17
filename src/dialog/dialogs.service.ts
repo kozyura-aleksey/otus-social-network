@@ -27,13 +27,19 @@ export class DialogsService {
 
   async getDialog(current_user_id: number, friend_id: number) {
     try {
-      const dialogs = await query(
+      const sendMessages = await query(
         this.poolMaster,
         `SELECT * from dialogs 
           where user_id = $1 and friend_id = $2`,
         [current_user_id, friend_id],
       );
-      return dialogs;
+      const receivedMessages = await query(
+        this.poolMaster,
+        `SELECT * from dialogs 
+          where user_id = $1 and friend_id = $2`,
+        [friend_id, current_user_id],
+      );
+      return [...sendMessages, ...receivedMessages];
     } catch (e) {
       console.log(e);
       throw new BadRequestException();
