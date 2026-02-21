@@ -9,8 +9,7 @@ import { FeedDto } from './dto/feed.dto';
 @Injectable()
 export class PostsService {
   constructor(
-    @Inject('PG_POOL_MASTER') private poolMaster: Pool,
-    @Inject('PG_POOL_SLAVE') private poolSlave: Pool,
+    @Inject('PG_POOL_COORDINATOR') private poolCoordinator: Pool,
     private jwtService: JwtService,
     @Inject(REDIS_CLIENT)
     private readonly redis: Redis,
@@ -19,13 +18,13 @@ export class PostsService {
   async createPost(current_user_id: number, text: string) {
     try {
       await query(
-        this.poolMaster,
+        this.poolCoordinator,
         `INSERT INTO posts(text, user_id)
               VALUES ($1, $2)`,
         [text, current_user_id],
       );
       const friends = await query(
-        this.poolMaster,
+        this.poolCoordinator,
         `SELECT user_id
          FROM friends
          WHERE friend_id = $1`,
@@ -44,7 +43,7 @@ export class PostsService {
   async updatePost(current_user_id: number, text: string, post_id: number) {
     try {
       await query(
-        this.poolMaster,
+        this.poolCoordinator,
         `update posts
         set text = $1 
         where user_id = $2 and id = $3`,
@@ -59,7 +58,7 @@ export class PostsService {
   async deletePost(current_user_id: number, post_id: number) {
     try {
       await query(
-        this.poolMaster,
+        this.poolCoordinator,
         `delete from posts
               where user_id = $1 and id = $2`,
         [current_user_id, post_id],
@@ -73,7 +72,7 @@ export class PostsService {
   async getPost(current_user_id: number, post_id: number) {
     try {
       const post = await query(
-        this.poolMaster,
+        this.poolCoordinator,
         `SELECT * from posts
               where user_id = $1 and id = $2`,
         [current_user_id, post_id],
@@ -98,7 +97,7 @@ export class PostsService {
       );
       if (!cachedPosts || cachedPosts.length === 0) {
         const posts = await query(
-          this.poolMaster,
+          this.poolCoordinator,
           `SELECT p.*
            FROM posts p
            JOIN friends f ON p.user_id = f.friend_id

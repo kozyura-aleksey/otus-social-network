@@ -46,7 +46,25 @@ import { Pool } from 'pg';
         });
       },
     },
+    {
+      provide: 'PG_POOL_COORDINATOR',
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return new Pool({
+          host: configService.get('POSTGRES_HOST') ?? 'localhost',
+          port: Number(configService.get('POSTGRES_COORDINATOR_PORT')) ?? 5442,
+          user: configService.get('POSTGRES_USER') ?? 'postgres',
+          password: configService.get('POSTGRES_PASSWORD') ?? 'postgres',
+          database: configService.get('POSTGRES_DB') ?? 'social_network_db',
+        });
+      },
+    },
   ],
-  exports: ['PG_POOL_MASTER', 'PG_POOL_SLAVE', 'PG_POOL_SLAVE_SECOND'],
+  exports: [
+    'PG_POOL_MASTER',
+    'PG_POOL_SLAVE',
+    'PG_POOL_SLAVE_SECOND',
+    'PG_POOL_COORDINATOR',
+  ],
 })
 export class DatabaseModule {}

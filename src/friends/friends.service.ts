@@ -6,8 +6,7 @@ import { query } from 'src/utils/query';
 @Injectable()
 export class FriendsService {
   constructor(
-    @Inject('PG_POOL_MASTER') private poolMaster: Pool,
-    @Inject('PG_POOL_SLAVE') private poolSlave: Pool,
+    @Inject('PG_POOL_COORDINATOR') private poolCoordinator: Pool,
     private jwtService: JwtService,
   ) {}
 
@@ -18,7 +17,7 @@ export class FriendsService {
 
     try {
       await query(
-        this.poolMaster,
+        this.poolCoordinator,
         `INSERT INTO friends(user_id, friend_id)
         VALUES ($1, $2)`,
         [current_user_id, friend_id],
@@ -37,7 +36,7 @@ export class FriendsService {
 
     try {
       await query(
-        this.poolMaster,
+        this.poolCoordinator,
         `DELETE FROM friends where 
          current_user_id = $1 and  friend_id = $2`,
         [current_user_id, friend_id],

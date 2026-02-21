@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS conversations (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     friend_id BIGINT NOT NULL,
 
@@ -14,22 +14,26 @@ CREATE TABLE IF NOT EXISTS conversations (
      ON DELETE CASCADE
 );
 
+
 CREATE TABLE IF NOT EXISTS messages (
-    id SERIAL PRIMARY KEY,
-    conversation_id BIGINT,
-    sender_id BIGINT,
+    id BIGSERIAL,
+    conversation_id BIGINT NOT NULL,
+    sender_id BIGINT NOT NULL,
     message TEXT,
     created_at TIMESTAMP,
 
+    PRIMARY KEY (conversation_id, id),
+
     CONSTRAINT fk_messages_conversations
-     FOREIGN KEY (conversation_id)
-     REFERENCES conversations(id)
-     ON DELETE CASCADE
+        FOREIGN KEY (conversation_id)
+        REFERENCES conversations(id)
+        ON DELETE CASCADE
 );
 
-CREATE UNIQUE INDEX conversations_pair_idx
-ON conversations (
-  LEAST(user_id, friend_id),
-  GREATEST(user_id, friend_id)
-);
+SELECT create_reference_table('users');
+
+SELECT create_distributed_table('conversations', 'id');
+
+SELECT create_distributed_table('messages', 'conversation_id');
+
 

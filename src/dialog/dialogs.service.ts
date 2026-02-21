@@ -6,43 +6,47 @@ import { query } from 'src/utils/query';
 @Injectable()
 export class DialogsService {
   constructor(
-    @Inject('PG_POOL_MASTER') private poolMaster: Pool,
-    @Inject('PG_POOL_SLAVE') private poolSlave: Pool,
+    @Inject('PG_POOL_COORDINATOR') private poolCoordinator: Pool,
     private jwtService: JwtService,
   ) {}
 
   async sendMessage(current_user_id: number, text: string, friend_id: number) {
-    const client = await this.poolMaster.connect();
+    const client = await this.poolCoordinator.connect();
 
     try {
       await client.query('BEGIN');
-      const user1 = current_user_id;
-      const user2 = friend_id;
 
-      const { rows: conversationRows } = await client.query(
+      const user1 = Math.min(current_user_id, friend_id);
+      const user2 = Math.max(current_user_id, friend_id);
+
+      await client.query(`SELECT pg_advisory_xact_lock($1, $2)`, [
+        user1,
+        user2,
+      ]);
+
+      const { rows } = await client.query(
         `
-        INSERT INTO conversations (user_id, friend_id)
-        VALUES ($1, $2)
-        ON CONFLICT DO NOTHING
-        RETURNING id
+        SELECT id
+        FROM conversations
+        WHERE user_id = $1 AND friend_id = $2
+        LIMIT 1
         `,
         [user1, user2],
       );
 
       let conversationId: number;
 
-      if (conversationRows.length) {
-        conversationId = conversationRows[0].id;
-      } else {
-        const { rows } = await client.query(
+      if (rows.length === 0) {
+        const insert = await client.query(
           `
-          SELECT id
-          FROM conversations
-          WHERE LEAST(user_id, friend_id)::bigint = $1
-          AND GREATEST(user_id, friend_id)::bigint = $2
+          INSERT INTO conversations (user_id, friend_id)
+          VALUES ($1, $2)
+          RETURNING id
           `,
           [user1, user2],
         );
+        conversationId = insert.rows[0].id;
+      } else {
         conversationId = rows[0].id;
       }
 
@@ -70,7 +74,7 @@ export class DialogsService {
       const user2 = Math.max(current_user_id, friend_id);
 
       const conversations = await query(
-        this.poolMaster,
+        this.poolCoordinator,
         `
         SELECT id
         FROM conversations
@@ -86,7 +90,7 @@ export class DialogsService {
       const conversationId = conversations[0].id;
 
       const messages = await query(
-        this.poolMaster,
+        this.poolCoordinator,
         `
         SELECT id, sender_id, message, created_at
         FROM messages
