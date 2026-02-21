@@ -3,6 +3,25 @@
 version: "3"
 
 services:
+  app:
+    build: .
+    depends_on:
+      - master
+      - worker
+      - manager
+    environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_COORDINATOR_PORT: 5442
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: social_network_db
+      SECRET_KEY: SECRET
+      EXPIRE_IN: '30m'
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app/
+      - /app/node_modules
   master:
     container_name: "social-network-project-citus_master"
     image: "citusdata/citus:12.1.3"
